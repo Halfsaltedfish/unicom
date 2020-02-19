@@ -1,5 +1,6 @@
 package me.kuku.controller;
 
+import me.kuku.bean.User;
 import me.kuku.entity.PhoneLa;
 import me.kuku.entity.Prize;
 import me.kuku.repository.PhoneRepository;
@@ -20,6 +21,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 public class FlowController {
@@ -29,25 +31,32 @@ public class FlowController {
     FlowService flowService;
     @Autowired
     PrizeRepository prizeRepository;
-    @Value("${user.max}")
-    private int max;
+    @Autowired
+    User user;
+
+    @RequestMapping("/")
+    public String toIndex(Map<String, Object> map){
+        map.put("con", user.getHtmlCon());
+        map.put("max", user.getMax());
+        return "index";
+    }
 
     @RequestMapping("/add")
     @ResponseBody
-    public PhoneLa addPhone(PhoneLa phoneLa){
+    public Integer addPhone(PhoneLa phoneLa){
         PhoneLa phoneObj = phoneRepository.findByPhone(phoneLa.getPhone());
         if (!flowService.checkUnicom(phoneLa.getPhone())){
-            return null;
+            return -2;
         }
         int num = phoneRepository.findAll().size();
-        if (num > max){
-            return null;
+        if (num > user.getMax()){
+            return -1;
         }
         if (phoneObj != null){
-            return null;
+            return 0;
         }
         PhoneLa save = phoneRepository.save(phoneLa);
-        return save;
+        return 1;
     }
 
     @RequestMapping("/query")

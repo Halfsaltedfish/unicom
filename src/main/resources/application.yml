@@ -1,5 +1,6 @@
 server:
   port: 8099
+
 spring:
   datasource:
     url: jdbc:mysql://127.0.0.1:3306/kuku?useUnicode=true&characterEncoding=utf8&serverTimezone=GMT%2B8
@@ -10,12 +11,25 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
   thymeleaf:
     cache: false
 user:
-  max: 400
-#支持多个key，每个key调用199次切换下一个。
+  #添加挂机手机号的最大值
+  max: 600
+  #懒得用数据库了，用数据库我还要写后台，我懒
+  htmlCon:
+    #标题
+    title: 撸流量
+    #抽奖挂机上面的红色字
+    lotteryText: 用了<a target="_blank" href="https://github.com/teenyda/qingdao/tree/outwitTheMilk">大佬</a>的识别验证码接口，不需要百度ai啦。
+    #底部版权说明
+    copyright: <a target="_blank" href="https://github.com/kukume/unicom">GitHub</a>，By <a target="_blank" href="https://www.kuku.me">kuku</a>，<a href="http://beian.miit.gov.cn" target="_blank">湘ICP备19013011号</a>
+    #小图标链接
+    ico: https://www.kuku.me/favicon.ico
+  #定时器，此为每天的00:01运行
+  cron: 0 1 0 * * ?
+  #默认使用大佬的接口，如接口gg，才使用百度ai的key。支持多个key，每个key调用199次切换下一个。
   key:
     - apiKey: xxx
       secretKey: xxx

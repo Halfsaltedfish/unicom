@@ -53,8 +53,27 @@ public class LotteryService {
         return id;
     }
 
+    public String getCaptchaUrl(String userId){
+        return "http://m.client.10010.com/sma-lottery/qpactivity/getSysManageLoginCode.htm?userid=" + userId + "&code=" + new Date().getTime();
+    }
+
+    public String getCaptcha(String captchaUrl){
+        HttpPost httpPost = new HttpPost("http://47.94.234.77:9527/getCode");
+        List<NameValuePair> params = new ArrayList<>();
+        params.add(new BasicNameValuePair("url", captchaUrl));
+        String str = null;
+        try {
+            httpPost.setEntity(new UrlEncodedFormEntity(params, "utf8"));
+            CloseableHttpResponse execute = httpClient.execute(httpPost);
+            str = EntityUtils.toString(execute.getEntity(), "utf8");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return str;
+    }
+
     public byte[] getCaptchaImg(String userId){
-        HttpGet httpGet = new HttpGet("http://m.client.10010.com/sma-lottery/qpactivity/getSysManageLoginCode.htm?userid=" + userId + "&code=" + new Date().getTime());
+        HttpGet httpGet = new HttpGet(getCaptchaUrl(userId));
         byte[] byteArr = null;
         InputStream is = null;
         ByteArrayOutputStream bao = null;
@@ -145,8 +164,8 @@ public class LotteryService {
                     return "没有抽奖次数了";
                 }else if (status == 400 || status == 700){
                     return "抽奖人数过多";
-//                }else if (jsonObject.getBoolean("isunicom").equals(false)){
-//                    return "错误：" + jsonObject.getString("msg");
+                }else if (jsonObject.getBoolean("isunicom").equals(false)){
+                    return "错误：" + jsonObject.getString("msg");
                 }else if (status == 200 || status == 0){
                     String level = jsonObject.getJSONObject("data").getString("level");
                     switch (level){
@@ -170,6 +189,9 @@ public class LotteryService {
                             break;
                         case "7":
                             gift = "50元开卡礼包";
+                            break;
+                        default:
+                            gift = "未知奖品";
                     }
                 }
             }
@@ -181,21 +203,22 @@ public class LotteryService {
 
     public String run(String phone, User user, BaiDuAIService baiDuAIService){
         String userId = getUserId();
-        byte[] captchaImg = getCaptchaImg(userId);
+        byte[] captchaImg = null;
         String encryptMobile = null;
         String code = null;
         String gifts = "";
         while (true){
-            code = baiDuAIService.Literacy(captchaImg, user);
+            code = getCaptcha(getCaptchaUrl(userId));
             if (code == null){
                 captchaImg = getCaptchaImg(userId);
+                code = baiDuAIService.Literacy(captchaImg, user);
+            }
+            if (code == null){
                 continue;
             }
             encryptMobile = getMobile(phone, code, userId);
             if (encryptMobile != null){
                 break;
-            }else{
-                captchaImg = getCaptchaImg(userId);
             }
         }
         for (int i = 0; i < 3; i++) {

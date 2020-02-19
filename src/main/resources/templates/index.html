@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>撸流量</title>
+    <title th:text="${con.getTitle()}"></title>
     <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0" name="viewport">
-    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" th:href="@{//cdn.bootcss.com/twitter-bootstrap/3.4.1/css/bootstrap.min.css}">
+    <link rel="shortcut icon" th:href="@{${con.getIco()}}" />
 </head>
 <body>
     <div class="modal fade" tabindex="-1" role="dialog">
@@ -61,22 +62,19 @@
                     <input type="button" class="btn btn-primary query" value="查询中奖结果">
                     <input type="button" class="btn btn-primary delete" value="删除">
                     <div style="margin-top: 20px">
-<!--                        <p style="color: red">应该是都能抽到了</p>-->
+                        <p style="color: red" th:utext="${con.getLotteryText()}"></p>
                         <p>注：青岛啤酒(趣味天天摇)抽奖，仅限联通号码使用，一天抽奖3次，可能抽中50MB流量、100MB流量、1000MB流量、20钻石、幸运奖、15或50的开卡礼包（后2个都是没吊用的），
                             只要添加手机号码挂机，本系统将在凌晨（00:01）自动为你抽奖。系统会保存你的手机号码，介意请勿使用！已添加的可自行查询删掉。(经验：一个手机号码貌似一个月累计最多能抽中1000M
-                            ，中不中流量看运气), 暂设置添加手机号最大数量为500</p>
+                            ，中不中流量看运气), 暂设置添加手机号最大数量为[[${max}]]</p>
                     </div>
                 </form>
             </div>
         </div>
-        <div class="text-center">
-            <a target="_blank" href="https://github.com/kukume/unicom">GitHub</a>，By <a target="_blank" href="https://www.kuku.me">kuku</a>，
-<!--            <a href="http://beian.miit.gov.cn" target="_blank">湘ICP备19013011号</a>-->
-        </div>
+        <div th:utext="${con.getCopyright()}" class="text-center"></div>
     </div>
 </body>
-<script src="js/jquery.min.js"></script>
-<script src="js/bootstrap.min.js"></script>
+<script th:src="@{//cdn.bootcss.com/jquery/3.4.1/jquery.min.js}"></script>
+<script th:src="@{//cdn.bootcss.com/twitter-bootstrap/3.4.1/js/bootstrap.min.js}"></script>
 <script>
     let now = new Date();
     let date = now.getFullYear() + "-" + (now.getMonth() + 1) + "-" + now.getDate();
@@ -87,9 +85,14 @@
         $(".add").click(function () {
             let form = new FormData(document.getElementById("cron"));
             ajaxRequest("add", form, function (data) {
-                if (data == ""){
+                if (data === -2){
                     //已存在号码
-                    showModal("<p>该号码已存在或者该号码不是联通号码或者添加号码达到最大限制</p>")
+                    // showModal("<p>该号码已存在或者该号码不是联通号码或者添加号码达到最大限制</p>")
+                    showModal("<p>该号码不是联通号码</p>")
+                }else if (data === -1){
+                    showModal("<p>添加号码数量已达最大限制</p>")
+                }else if (data === 0){
+                    showModal("<p>该号码已存在</p>")
                 }else{
                     showModal("<p>添加成功！</p>");
                 }
@@ -143,7 +146,8 @@
                 if (data == false){
                     showModal("<p>验证码错误或者失效或者是其它稀奇古怪的原因</p>")
                 }else{
-                    showModal("<p>领取成功</p>")
+                    alert("领取成功")
+                    location.reload()
                 }
             })
         })

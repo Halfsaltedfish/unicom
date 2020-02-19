@@ -48,7 +48,6 @@ public class BaiDuAIService {
             CloseableHttpResponse execute = httpClient.execute(httpGet);
             if (execute.getStatusLine().getStatusCode() == 200){
                 String result = EntityUtils.toString(execute.getEntity(), "utf8");
-                System.out.println(result);
                 token = JSON.parseObject(result).getString("access_token");
             }
         } catch (IOException e) {
